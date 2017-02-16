@@ -9,7 +9,7 @@ import (
 	"github.com/juju/ratelimit"
 	"github.com/rancher/external-dns/providers"
 	"github.com/rancher/external-dns/utils"
-	api "github.com/weppos/go-dnsimple/dnsimple"
+	api "github.com/dnsimple/dnsimple-go/dnsimple"
 )
 
 type DNSimpleProvider struct {
@@ -23,19 +23,20 @@ func init() {
 }
 
 func (d *DNSimpleProvider) Init(rootDomainName string) error {
-	var email, apiToken string
-	if email = os.Getenv("DNSIMPLE_EMAIL"); len(email) == 0 {
-		return fmt.Errorf("DNSIMPLE_EMAIL is not set")
-	}
+	var oauthToken string
+	// var email, oauthToken string
+	// if email = os.Getenv("DNSIMPLE_EMAIL"); len(email) == 0 {
+	// 	return fmt.Errorf("DNSIMPLE_EMAIL is not set")
+	// }
 
-	if apiToken = os.Getenv("DNSIMPLE_TOKEN"); len(apiToken) == 0 {
+	if oauthToken = os.Getenv("DNSIMPLE_TOKEN"); len(oauthToken) == 0 {
 		return fmt.Errorf("DNSIMPLE_TOKEN is not set")
 	}
 
 	d.root = utils.UnFqdn(rootDomainName)
-	d.client = api.NewClient(apiToken, email)
+	d.client = api.NewClient(oauthToken)
+	// d.client = api.NewClient(oauthToken, email)
 	d.limiter = ratelimit.NewBucketWithRate(1.5, 5)
-
 	domains, _, err := d.client.Domains.List()
 	if err != nil {
 		return fmt.Errorf("Failed to list zones: %v", err)
